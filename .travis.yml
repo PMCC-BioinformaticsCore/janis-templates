@@ -1,0 +1,15 @@
+language: python
+python:
+- '3.6'
+install: 
+script: echo "Skip tests"
+after_success: codecov
+deploy:
+  provider: pypi
+  user: illusional
+  password:
+    secure: r6wkPNFJ1CP15chaZdQoHTsVOlVRUWuaWQA9MAg9drKibMmNdjOHsBgez8mhfPPqqwfR0r1S3VIwCMxbIWUKHxcsXB7Arft2MWaKqe3ByIn4+VxVXIj0JR7zzZzTHQfVmBfQhWX4HqFBu/Es2GehR8MdZAu+YFVIplGbnDmGwBAWxUCW66E0+I1ET/4paWuZZsYcqyr+uZXl1HnL225rOc/ub60Y93/X+wMHNyvya0vOecx6N1ZxJCeH05Y+tBH99KtwZexRLQmQ5WRUklVSsb6XMq/tcKoeq1j1SgbSy8EYbxUPtxutX9oNkROs+blxqsusQBPECa3DrwcZE9FVTtippbKLT/HLLPnDuAW01j0ooHc2jAv61el46JotEiUQnz3fZKgykKNwFK51O4vrWaEeMMhDwNazRXBhcpvviEpFm/NN+OVxgCRemcXLUpaiaSPX1NZirnfXYpwPyKmhd4kbHiYlql73agmf1iNQV5DewrJY4nOAsCU/CixkoikqXEXb4deiuJhgr8YBOM23Beoy9+Yyc5bMyDqLLT40TJ/YBXWIV070XY8jtvPi9lUGejzhrW9fQm4I3PaHGWvDn5phMmwbdflHWSHfp4qLmQNih8RPJUo9oE/o19/5s7+N0eoTqqFAjL5NyoKsOpEX3AUlMFZIBq8sjMHYJVQbNBk=
+  distributions: sdist bdist_wheel
+  on:
+    tags: true
+    repo: PMCC-BioinformaticsCore/janis-templates
