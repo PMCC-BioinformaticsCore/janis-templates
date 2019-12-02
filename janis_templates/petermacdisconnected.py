@@ -3,7 +3,7 @@ from typing import Union, List
 
 from janis_core import Logger
 
-from janis_assistant.templates.petermac import PeterMacTemplate
+from .petermac import PeterMacTemplate
 
 
 class PeterMacDisconnectedTemplate(PeterMacTemplate):

@@ -25,7 +25,6 @@ class PawseyTemplate(SlurmSingularityTemplate):
         executionDir: str,
         containerDir: str,
         queues: Union[str, List[str]] = "workq",
-        submissionQueue: str = "longq",
         singularityVersion: str = "3.3.0",
         catchSlurmErrors=True,
         sendSlurmEmails=True,
@@ -33,8 +32,17 @@ class PawseyTemplate(SlurmSingularityTemplate):
         max_cores=28,
         max_ram=128,
     ):
-
-        self.submission_queue = submissionQueue
+        """
+        :param executionDir: A location where the execution should take place
+        :param containerDir: Location where to save and execute containers from
+        :param queues: A single or list of queues that woork should be submitted to
+        :param singularityVersion: Version of singularity to load
+        :param catchSlurmErrors: Catch Slurm errors (like OOM or walltime)
+        :param sendSlurmEmails: (requires JanisConfiguration.notifications.email to be set) Send emails for mail types END
+        :param singularityBuildInstructions: Instructions for building singularity, it's recommended to not touch this setting.
+        :param max_cores: Maximum number of cores a task can request
+        :param max_ram: Maximum amount of ram (GB) that a task can request
+        """
 
         singload = "module load singularity"
         if singularityVersion:
@@ -54,6 +62,33 @@ class PawseyTemplate(SlurmSingularityTemplate):
 
 
 class PawseyDisconnectedTemplate(PawseyTemplate):
+    def __init__(
+        self,
+        executionDir: str,
+        containerDir: str,
+        queues: Union[str, List[str]] = "workq",
+        submissionQueue: str = "longq",
+        singularityVersion: str = "3.3.0",
+        catchSlurmErrors=True,
+        sendSlurmEmails=True,
+        singularityBuildInstructions="singularity pull $image docker://${docker}",
+        max_cores=28,
+        max_ram=128,
+    ):
+        """
+        :param executionDir: A location where the execution should take place
+        :param containerDir: Location where to save and execute containers from
+        :param queues: A single or list of queues that woork should be submitted to
+        :param singularityVersion: Version of singularity to load
+        :param catchSlurmErrors: Catch Slurm errors (like OOM or walltime)
+        :param sendSlurmEmails: (requires JanisConfiguration.notifications.email to be set) Send emails for mail types END
+        :param singularityBuildInstructions: Instructions for building singularity, it's recommended to not touch this setting.
+        :param max_cores: Maximum number of cores a task can request
+        :param max_ram: Maximum amount of ram (GB) that a task can request
+        """
+        self.submission_queue = submissionQueue
+        super().__init__(executionDir=executionDir)
+
     def submit_detatched_resume(self, wid, command):
         q = self.queues
         jq = ", ".join(q) if isinstance(q, list) else q

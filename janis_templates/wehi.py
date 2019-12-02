@@ -16,7 +16,6 @@ class WEHITemplate(PbsSingularityTemplate):
         max_ram=256,
     ):
         """
-
         :param executionDir:
         :param containerDir:
         :param queue:
