@@ -28,9 +28,11 @@ setup(
             "spartan-disconnected=janis_templates.spartan:SpartanDisconnectedTemplate",
             "pmac-disconnected=janis_templates.petermacdisconnected:PeterMacDisconnectedTemplate",
             "wehi=janis_templates.wehi:WEHITemplate",
+            "pawsey=janis_templates.pawsey:PawseyTemplate",
+            "pawsey-disconnected=janis_templates.pawsey:PawseyDisconnectedTemplate",
         ]
     },
-    install_requires=["janis-pipelines.assistant>=0.7.0"],
+    install_requires=["janis-pipelines.runner>=0.7.0"],
     zip_safe=False,
     long_description=long_description,
     long_description_content_type="text/markdown",
