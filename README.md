@@ -1,4 +1,4 @@
-# Janis Parkville
+# Janis Templates (assistant)
 
 [Janis-assistant](/PMCC-BioinformaticsCore/janis-assistant) is a component of Janis used to run workflows across various execution environments. This repository contains a number of preconfigured "templates" that you can use to run your workflow.
 
@@ -115,9 +115,13 @@ class MyTemplate(SlurmSingularityTemplate):
 Add an entrypoint ([best tutorial ever](https://amir.rachum.com/blog/2017/07/28/python-entry-points/)) in `setup.py` like the following:
 
 ```python
-entry_points={
+    # other setup.py stuff
+    entry_points={
         "janis.templates": [
             "yourtemplatename=janis_templates.yourinstitute:MyTemplate",
+            # other templates here
+        ]
+    }
 ```
 
 
