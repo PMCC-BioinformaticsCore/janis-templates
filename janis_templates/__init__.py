@@ -1,0 +1,1 @@
+from janis_templates.__meta__ import __version__

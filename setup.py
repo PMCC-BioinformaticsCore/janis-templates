@@ -22,6 +22,7 @@ setup(
     packages=["janis_templates"]
     + ["janis_templates." + p for p in sorted(find_packages("./janis_templates"))],
     entry_points={
+        "janis.extension": ["templates=janis_templates"],
         "janis.templates": [
             "pmac=janis_templates.petermac:PeterMacTemplate",
             "spartan=janis_templates.spartan:SpartanTemplate",
