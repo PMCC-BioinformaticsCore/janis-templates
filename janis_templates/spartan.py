@@ -13,9 +13,9 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        executionDir,
+        executionDir: str,
+        containerDir: str,
         queues: Union[str, List[str]] = "physical",
-        containerDir="/config/binaries/singularity/containers_devel/janis/",
         singularityVersion="3.2.0-spartan_gcc-6.2.0",
         sendSlurmEmails=True,
         catchSlurmErrors=True,
@@ -45,7 +45,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
             queues=queues,
             sendSlurmEmails=sendSlurmEmails,
             catchSlurmErrors=catchSlurmErrors,
-            buildInstructions="singularity pull $image docker://${{docker}}",
+            buildInstructions="singularity pull $image docker://${docker}",
             singularityLoadInstructions=singload,
             containerDir=containerDir,
             limitResources=False,
