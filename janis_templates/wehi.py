@@ -11,6 +11,7 @@ class WEHITemplate(PbsSingularityTemplate):
         queue: str = None,
         singularityVersion="3.4.1",
         sendJobEmails=False,
+        catchPbsErrors=True,
         singularityBuildInstructions=None,
         max_cores=40,
         max_ram=256,
@@ -44,4 +45,5 @@ class WEHITemplate(PbsSingularityTemplate):
             containerDir=containerDir,
             max_cores=max_cores,
             max_ram=max_ram,
+            catchPbsErrors=catchPbsErrors
         )
