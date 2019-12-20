@@ -46,7 +46,7 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             "-J",
             f"janis-{wid}",
             "--time",
-            self.max_workflow_time or 1440,
+            str(self.max_workflow_time or 1440),
             "--wrap",
             jc,
         ]
