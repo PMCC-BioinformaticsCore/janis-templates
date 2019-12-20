@@ -11,10 +11,11 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
         self,
         executionDir: str,
         queues: Union[str, List[str]] = "prod_med,prod",
-        containerDir="/config/binaries/singularity/containers_devel/janis/",
-        singularityVersion="3.4.0",
-        catchSlurmErrors=True,
-        sendSlurmEmails=False,
+        containerDir: str="/config/binaries/singularity/containers_devel/janis/",
+        singularityVersion: bool="3.4.0",
+        catchSlurmErrors: bool=True,
+        sendSlurmEmails: bool=False,
+        max_workflow_time: int=14400
     ):
 
         buildinstructions = (
@@ -32,6 +33,8 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             singularityBuildInstructions=buildinstructions,
         )
 
+        self.max_workflow_time = max_workflow_time
+
     def submit_detatched_resume(self, wid, command):
         q = "janis"
         jq = ", ".join(q) if isinstance(q, list) else q
@@ -43,7 +46,7 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             "-J",
             f"janis-{wid}",
             "--time",
-            "30",
+            self.max_workflow_time or 1440,
             "--wrap",
             jc,
         ]
