@@ -51,11 +51,13 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             jc,
         ]
         Logger.info("Starting command: " + str(newcommand))
-        rc = subprocess.call(
-            newcommand,
-            close_fds=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
-        )
-        if rc != 0:
-            raise Exception(f"Couldn't submit janis-monitor, non-zero exit code ({rc})")
+        try:
+            out = subprocess.check_output(
+                newcommand,
+                close_fds=True,
+                stderr=subprocess.STDOUT,
+            )
+            Logger.info(out)
+        except subprocess.CalledProcessError as e:
+            Logger.critical(f"Couldn't submit janis-monitor, non-zero exit code ({e.returncode})")
+            raise e
