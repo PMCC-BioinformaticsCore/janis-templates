@@ -35,10 +35,12 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
 
         self.max_workflow_time = max_workflow_time
 
-    def submit_detatched_resume(self, wid, command):
+    def submit_detatched_resume(self, wid: str, command: List[str], loglocation: str):
+        import os.path
         q = "janis"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
+
         newcommand = [
             "sbatch",
             "-p",
@@ -47,6 +49,8 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             f"janis-{wid}",
             "--time",
             str(self.max_workflow_time or 1440),
+            "-o", os.path.join(loglocation, "slurm.stdout"),
+            "-e", os.path.join(loglocation, "slurm.stderr"),
             "--wrap",
             jc,
         ]
