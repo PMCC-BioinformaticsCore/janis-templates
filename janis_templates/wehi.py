@@ -6,8 +6,8 @@ from janis_assistant.templates.pbs import PbsSingularityTemplate
 class WEHITemplate(PbsSingularityTemplate):
     def __init__(
         self,
-        executionDir: str,
         containerDir: str,
+        executionDir: str=None,
         queue: str = None,
         singularityVersion="3.4.1",
         sendJobEmails=False,

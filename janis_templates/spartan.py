@@ -13,8 +13,8 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        executionDir: str,
         containerDir: str,
+        executionDir: str=None,
         queues: Union[str, List[str]] = "physical",
         singularityVersion="3.2.0-spartan_gcc-6.2.0",
         sendSlurmEmails=True,

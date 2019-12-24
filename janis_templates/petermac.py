@@ -6,7 +6,7 @@ from janis_assistant.templates.slurm import SlurmSingularityTemplate
 class PeterMacTemplate(SlurmSingularityTemplate):
     def __init__(
         self,
-        executionDir: str,
+        executionDir: str=None,
         queues: Union[str, List[str]] = "prod_med,prod",
         containerDir="/config/binaries/singularity/containers_devel/janis/",
         singularityVersion="3.4.0",

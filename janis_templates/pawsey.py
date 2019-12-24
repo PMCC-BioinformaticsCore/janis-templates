@@ -22,8 +22,8 @@ class PawseyTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        executionDir: str,
         containerDir: str,
+        executionDir: str=None,
         queues: Union[str, List[str]] = "workq",
         singularityVersion: str = "3.3.0",
         catchSlurmErrors=True,

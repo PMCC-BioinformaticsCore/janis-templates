@@ -9,7 +9,7 @@ from .petermac import PeterMacTemplate
 class PeterMacDisconnectedTemplate(PeterMacTemplate):
     def __init__(
         self,
-        executionDir: str,
+        executionDir: str=None,
         queues: Union[str, List[str]] = "prod_med,prod",
         containerDir: str="/config/binaries/singularity/containers_devel/janis/",
         singularityVersion: bool="3.4.0",
