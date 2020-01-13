@@ -71,4 +71,4 @@ class SpartanDisconnectedTemplate(SpartanTemplate):
             "--wrap",
             loadedcommand,
         ]
-        super(wid=wid, command=newcommand, capture_output=True, **kwargs)
+        super().__init__(wid=wid, command=newcommand, capture_output=True, **kwargs)

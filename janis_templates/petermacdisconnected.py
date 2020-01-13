@@ -56,4 +56,4 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             "--wrap",
             jc,
         ]
-        super(wid=wid, command=newcommand, capture_output=True, **kwargs)
+        super().__init__(wid=wid, command=newcommand, capture_output=True, **kwargs)
