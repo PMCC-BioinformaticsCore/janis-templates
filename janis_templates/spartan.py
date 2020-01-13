@@ -55,7 +55,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
 
 class SpartanDisconnectedTemplate(SpartanTemplate):
-    def submit_detatched_resume(self, wid, command):
+    def submit_detatched_resume(self, wid, command, **kwargs):
         q = self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
@@ -71,12 +71,4 @@ class SpartanDisconnectedTemplate(SpartanTemplate):
             "--wrap",
             loadedcommand,
         ]
-        Logger.info("Starting command: " + str(newcommand))
-        rc = subprocess.call(
-            newcommand,
-            close_fds=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
-        )
-        if rc != 0:
-            raise Exception(f"Couldn't submit janis-monitor, non-zero exit code ({rc})")
+        super(wid=wid, command=newcommand, capture_output=True, **kwargs)

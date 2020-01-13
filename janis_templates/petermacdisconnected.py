@@ -35,7 +35,9 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
 
         self.max_workflow_time = max_workflow_time
 
-    def submit_detatched_resume(self, wid: str, command: List[str], loglocation: str):
+    def submit_detatched_resume(
+        self, wid: str, command: List[str], logsdir, **kwargs
+    ):        
         import os.path
         q = "janis"
         jq = ", ".join(q) if isinstance(q, list) else q
@@ -49,19 +51,9 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             f"janis-{wid}",
             "--time",
             str(self.max_workflow_time or 1440),
-            "-o", os.path.join(loglocation, "slurm.stdout"),
-            "-e", os.path.join(loglocation, "slurm.stderr"),
+            "-o", os.path.join(logsdir, "slurm.stdout"),
+            "-e", os.path.join(logsdir, "slurm.stderr"),
             "--wrap",
             jc,
         ]
-        Logger.info("Starting command: " + str(newcommand))
-        try:
-            out = subprocess.check_output(
-                newcommand,
-                close_fds=True,
-                stderr=subprocess.STDOUT,
-            )
-            Logger.info(out)
-        except subprocess.CalledProcessError as e:
-            Logger.critical(f"Couldn't submit janis-monitor, non-zero exit code ({e.returncode})")
-            raise e
+        super(wid=wid, command=newcommand, capture_output=True, **kwargs)

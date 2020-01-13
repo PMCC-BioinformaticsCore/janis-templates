@@ -89,7 +89,9 @@ class PawseyDisconnectedTemplate(PawseyTemplate):
         self.submission_queue = submissionQueue
         super().__init__(executionDir=executionDir)
 
-    def submit_detatched_resume(self, wid, command):
+    def submit_detatched_resume(self, wid: str, command, logsdir, **kwargs):
+        import os.path
+
         q = self.queues
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
@@ -101,15 +103,9 @@ class PawseyDisconnectedTemplate(PawseyTemplate):
             f"janis-{wid}",
             "--time",
             self.SUBMISSION_LENGTH,
+            "-o", os.path.join(logsdir, "slurm.stdout"),
+            "-e", os.path.join(logsdir, "slurm.stderr"),
             "--wrap",
             jc,
         ]
-        Logger.info("Starting command: " + str(newcommand))
-        rc = subprocess.call(
-            newcommand,
-            close_fds=True,
-            # stdout=subprocess.DEVNULL,
-            # stderr=subprocess.DEVNULL,
-        )
-        if rc != 0:
-            raise Exception(f"Couldn't submit janis-monitor, non-zero exit code ({rc})")
+        super(wid=wid, command=newcommand, capture_output=True, **kwargs)
