@@ -6,44 +6,47 @@ from janis_assistant.templates.pbs import PbsSingularityTemplate
 class WEHITemplate(PbsSingularityTemplate):
     def __init__(
         self,
-        containerDir: str,
-        executionDir: str=None,
-        queue: str = None,
-        singularityVersion="3.4.1",
-        sendJobEmails=False,
-        catchPbsErrors=True,
-        singularityBuildInstructions=None,
+        container_dir: str,
+        execution_dir: str = None,
+        queues: str = None,
+        singularity_version="3.4.1",
+        catch_pbs_errors=True,
+        send_job_emails=True,
+        singularity_build_instructions=None,
         max_cores=40,
         max_ram=256,
     ):
         """
-        :param executionDir:
-        :param containerDir:
-        :param queue:
-        :param singularityVersion:
-        :param sendJobEmails:
-        :param singularityBuildInstructions:
-        :param max_cores:
-        :param max_ram:
+        :param container_dir: Location where to save and execute containers from
+        :param execution_dir: A location where the execution should take place
+        :param queues: A single or list of queues that woork should be submitted to
+        :param singularity_version: Version of singularity to load
+        :param catch_pbs_errors: Catch PBS errors (like OOM or walltime)
+        :param send_job_emails: (requires JanisConfiguration.notifications.email to be set) Send emails for mail types END
+        :param singularity_build_instructions: Instructions for building singularity, it's recommended to not touch this setting.
+        :param max_cores: Maximum number of cores a task can request
+        :param max_ram: Maximum amount of ram (GB) that a task can request
         """
 
         singload = "module load singularity"
-        if singularityVersion:
-            singload += "/" + str(singularityVersion)
+        if singularity_version:
+            singload += "/" + str(singularity_version)
 
         # Very cromwell specific at the moment, need to generalise this later
-        if not singularityBuildInstructions:
-            singularityBuildInstructions = "singularity pull $image docker://${docker}"
+        if not singularity_build_instructions:
+            singularity_build_instructions = (
+                "singularity pull $image docker://${docker}"
+            )
 
         super().__init__(
             mail_program="sendmail -t",
-            executionDir=executionDir,
-            queue=queue,
-            sendJobEmails=sendJobEmails,
-            buildInstructions=singularityBuildInstructions,
-            singularityLoadInstructions=singload,
-            containerDir=containerDir,
+            execution_dir=execution_dir,
+            queues=queues,
+            send_job_emails=send_job_emails,
+            build_instructions=singularity_build_instructions,
+            singularity_load_instructions=singload,
+            container_dir=container_dir,
             max_cores=max_cores,
             max_ram=max_ram,
-            catchPbsErrors=catchPbsErrors
+            catch_pbs_errors=catch_pbs_errors,
         )
