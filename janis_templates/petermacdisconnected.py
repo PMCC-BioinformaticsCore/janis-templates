@@ -69,7 +69,7 @@ class PeterMacDisconnectedTemplate(PeterMacTemplate):
             and config.notifications.email
         ):
             newcommand.extend(
-                ["--mail-user", config.notifications.email, "--mail-type" "END"]
+                ["--mail-user", config.notifications.email, "--mail-type", "END"]
             )
 
         newcommand.extend(["--wrap", jc])
