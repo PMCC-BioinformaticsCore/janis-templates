@@ -56,6 +56,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
 class SpartanDisconnectedTemplate(SpartanTemplate):
     def submit_detatched_resume(self, wid, command, config, logsdir, **kwargs):
+        import os.path
         q = self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
