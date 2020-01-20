@@ -15,6 +15,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         singularity_build_instructions=None,
         max_cores=40,
         max_ram=256,
+        max_workflow_time: int = 20100, # almost 14 days
     ):
         """Peter Mac (login node) template
 
@@ -29,6 +30,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param singularity_build_instructions: Sensible default for PeterMac template
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
+        :param max_workflow_time: The walltime of the submitted workflow "brain"
         """
 
         singload = "module load singularity"
@@ -56,3 +58,51 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             max_cores=max_cores,
             max_ram=max_ram,
         )
+
+        self.max_workflow_time = max_workflow_time
+
+
+    def submit_detatched_resume(
+        self, wid: str, command: List[str], logsdir, config, **kwargs
+    ):
+        import os.path
+
+        q = "janis"
+        jq = ", ".join(q) if isinstance(q, list) else q
+        jc = " ".join(command) if isinstance(command, list) else command
+
+        newcommand = [
+            "sbatch",
+            "-p",
+            jq,
+            "-J",
+            f"janis-{wid}",
+            "--time",
+            str(self.max_workflow_time or 14400),
+            "-o",
+            os.path.join(logsdir, "slurm.stdout"),
+            "-e",
+            os.path.join(logsdir, "slurm.stderr"),
+        ]
+
+        if (
+            self.send_slurm_emails
+            and config
+            and config.notifications
+            and config.notifications.email
+        ):
+            newcommand.extend(
+                ["--mail-user", config.notifications.email, "--mail-type", "END"]
+            )
+
+        newcommand.extend(["--wrap", jc])
+
+        super().submit_detatched_resume(
+            wid=wid,
+            command=newcommand,
+            capture_output=True,
+            config=config,
+            logsdir=logsdir,
+            **kwargs,
+        )
+

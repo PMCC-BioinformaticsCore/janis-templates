@@ -15,10 +15,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
     job dies.
 
     It's proposed that Janis assistant could resubmit itself
-
     """
-
-    SUBMISSION_LENGTH = "4-00:00:00"
 
     def __init__(
         self,
@@ -31,6 +28,8 @@ class PawseyTemplate(SlurmSingularityTemplate):
         singularity_build_instructions="singularity pull $image docker://${docker}",
         max_cores=28,
         max_ram=128,
+        submission_queue: str = "longq",
+        max_workflow_time: int = 5700, # almost 4 days
     ):
         """
         :param execution_dir: A location where the execution should take place
@@ -42,11 +41,15 @@ class PawseyTemplate(SlurmSingularityTemplate):
         :param singularity_build_instructions: Instructions for building singularity, it's recommended to not touch this setting.
         :param max_cores: Maximum number of cores a task can request
         :param max_ram: Maximum amount of ram (GB) that a task can request
+        :param submission_queue: Queue to submit the janis 'brain' to
         """
 
         singload = "module load singularity"
         if singularity_version:
             singload += "/" + str(singularity_version)
+
+        self.submission_queue = submission_queue
+        self.max_workflow_time = max_workflow_time
 
         super().__init__(
             execution_dir=execution_dir,
@@ -61,43 +64,6 @@ class PawseyTemplate(SlurmSingularityTemplate):
         )
 
 
-class PawseyDisconnectedTemplate(PawseyTemplate):
-    def __init__(
-        self,
-        container_dir: str,
-        execution_dir: str = None,
-        queues: Union[str, List[str]] = "workq",
-        submission_queue: str = "longq",
-        singularity_version: str = "3.3.0",
-        catch_slurm_errors=True,
-        send_job_emails=True,
-        singularity_build_instructions="singularity pull $image docker://${docker}",
-        max_cores=28,
-        max_ram=128,
-    ):
-        """
-        :param container_dir: Location where to save and execute containers from
-        :param execution_dir: A location where the execution should take place
-        :param queues: A single or list of queues that woork should be submitted to
-        :param singularity_version: Version of singularity to load
-        :param catch_slurm_errors: Catch Slurm errors (like OOM or walltime)
-        :param send_job_emails: (requires JanisConfiguration.notifications.email to be set) Send emails for mail types END
-        :param singularity_build_instructions: Instructions for building singularity, it's recommended to not touch this setting.
-        :param max_cores: Maximum number of cores a task can request
-        :param max_ram: Maximum amount of ram (GB) that a task can request
-        """
-        self.submission_queue = submission_queue
-        super().__init__(
-            execution_dir=execution_dir,
-            queues=queues,
-            container_dir=container_dir,
-            catch_slurm_errors=catch_slurm_errors,
-            send_job_emails=send_job_emails,
-            build_instructions=singularity_build_instructions,
-            max_cores=max_cores,
-            max_ram=max_ram,
-        )
-
     def submit_detatched_resume(self, wid: str, command, logsdir, config, **kwargs):
         import os.path
 
@@ -111,7 +77,7 @@ class PawseyDisconnectedTemplate(PawseyTemplate):
             "-J",
             f"janis-{wid}",
             "--time",
-            self.SUBMISSION_LENGTH,
+            str(self.max_workflow_time or 5700),
             "-o",
             os.path.join(logsdir, "slurm.stdout"),
             "-e",

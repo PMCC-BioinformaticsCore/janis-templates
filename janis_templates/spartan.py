@@ -15,12 +15,15 @@ class SpartanTemplate(SlurmSingularityTemplate):
         self,
         container_dir: str,
         execution_dir: str = None,
-        queues: Union[str, List[str]] = "physical",
+        queues: Union[str, List[str]] = "cloud",
         singularity_version="3.2.0-spartan_gcc-6.2.0",
         send_job_emails=True,
         catch_slurm_errors=True,
         max_cores=32,
         max_ram=508,
+
+        submission_queue: str = "cloud",
+        max_workflow_time: int = 20100, # almost 14 days
     ):
         """Spartan template
 
@@ -39,6 +42,9 @@ class SpartanTemplate(SlurmSingularityTemplate):
         if singularity_version:
             singload += "/" + str(singularity_version)
 
+        self.submission_queue = submission_queue
+        self.max_workflow_time = max_workflow_time
+
         super().__init__(
             mail_program="sendmail -t",
             execution_dir=execution_dir,
@@ -53,11 +59,9 @@ class SpartanTemplate(SlurmSingularityTemplate):
             max_ram=max_ram,
         )
 
-
-class SpartanDisconnectedTemplate(SpartanTemplate):
     def submit_detatched_resume(self, wid, command, config, logsdir, **kwargs):
         import os.path
-        q = self.queues or "physical"
+        q = self.submission_queue or self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
         loadedcommand = "module load Java && module load web_proxy && " + jc
@@ -72,7 +76,7 @@ class SpartanDisconnectedTemplate(SpartanTemplate):
             "-e",
             os.path.join(logsdir, "slurm.stderr"),
             "--time",
-            "1440",
+            str(self.max_workflow_time or 20100),
         ]
 
         if (
