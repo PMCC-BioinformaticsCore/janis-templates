@@ -29,7 +29,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
         max_cores=28,
         max_ram=128,
         submission_queue: str = "longq",
-        max_workflow_time: int = 5700, # almost 4 days
+        max_workflow_time: int = 5700,  # almost 4 days
     ):
         """
         :param execution_dir: A location where the execution should take place
@@ -62,7 +62,6 @@ class PawseyTemplate(SlurmSingularityTemplate):
             max_cores=max_cores,
             max_ram=max_ram,
         )
-
 
     def submit_detatched_resume(self, wid: str, command, logsdir, config, **kwargs):
         import os.path

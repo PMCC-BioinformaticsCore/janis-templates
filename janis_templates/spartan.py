@@ -21,9 +21,8 @@ class SpartanTemplate(SlurmSingularityTemplate):
         catch_slurm_errors=True,
         max_cores=32,
         max_ram=508,
-
         submission_queue: str = "cloud",
-        max_workflow_time: int = 20100, # almost 14 days
+        max_workflow_time: int = 20100,  # almost 14 days
     ):
         """Spartan template
 
@@ -61,6 +60,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
     def submit_detatched_resume(self, wid, command, config, logsdir, **kwargs):
         import os.path
+
         q = self.submission_queue or self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command

@@ -28,7 +28,7 @@ setup(
             "spartan=janis_templates.spartan:SpartanTemplate",
             "wehi=janis_templates.wehi:WEHITemplate",
             "pawsey=janis_templates.pawsey:PawseyTemplate",
-        ]
+        ],
     },
     install_requires=["janis-pipelines.runner>=0.9.0"],
     zip_safe=False,

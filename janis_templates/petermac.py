@@ -15,7 +15,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         singularity_build_instructions=None,
         max_cores=40,
         max_ram=256,
-        max_workflow_time: int = 20100, # almost 14 days
+        max_workflow_time: int = 20100,  # almost 14 days
     ):
         """Peter Mac (login node) template
 
@@ -61,7 +61,6 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         self.max_workflow_time = max_workflow_time
 
-
     def submit_detatched_resume(
         self, wid: str, command: List[str], logsdir, config, **kwargs
     ):
@@ -105,4 +104,3 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             logsdir=logsdir,
             **kwargs,
         )
-
