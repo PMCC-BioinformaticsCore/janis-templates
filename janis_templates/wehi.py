@@ -8,11 +8,11 @@ class WEHITemplate(PbsSingularityTemplate):
         self,
         container_dir: str,
         execution_dir: str = None,
-        queues: str = None,
+        queues: Union[List[str], str] = None,
         singularity_version="3.4.1",
         catch_pbs_errors=True,
         send_job_emails=True,
-        singularity_build_instructions=None,
+        build_instructions=None,
         max_cores=40,
         max_ram=256,
     ):
@@ -23,7 +23,7 @@ class WEHITemplate(PbsSingularityTemplate):
         :param singularity_version: Version of singularity to load
         :param catch_pbs_errors: Catch PBS errors (like OOM or walltime)
         :param send_job_emails: (requires JanisConfiguration.notifications.email to be set) Send emails for mail types END
-        :param singularity_build_instructions: Instructions for building singularity, it's recommended to not touch this setting.
+        :param build_instructions: Instructions for building singularity, it's recommended to not touch this setting.
         :param max_cores: Maximum number of cores a task can request
         :param max_ram: Maximum amount of ram (GB) that a task can request
         """
@@ -33,17 +33,15 @@ class WEHITemplate(PbsSingularityTemplate):
             singload += "/" + str(singularity_version)
 
         # Very cromwell specific at the moment, need to generalise this later
-        if not singularity_build_instructions:
-            singularity_build_instructions = (
-                "singularity pull $image docker://${docker}"
-            )
+        if not build_instructions:
+            build_instructions = "singularity pull $image docker://${docker}"
 
         super().__init__(
             mail_program="sendmail -t",
             execution_dir=execution_dir,
             queues=queues,
             send_job_emails=send_job_emails,
-            build_instructions=singularity_build_instructions,
+            build_instructions=build_instructions,
             singularity_load_instructions=singload,
             container_dir=container_dir,
             max_cores=max_cores,
