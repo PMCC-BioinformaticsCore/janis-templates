@@ -11,6 +11,19 @@ class SpartanTemplate(SlurmSingularityTemplate):
     https://dashboard.hpc.unimelb.edu.au/
     """
 
+    ignore_init_keys = [
+        "execution_dir",
+        "build_instructions",
+        "container_dir",
+        "singularity_version",
+        "singularity_build_instructions",
+        "max_cores",
+        "max_ram",
+        "can_run_in_foreground",
+        "run_in_background",
+        "janis_memory",
+    ]
+
     def __init__(
         self,
         container_dir: str,
@@ -23,6 +36,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         max_ram=508,
         submission_queue: str = "cloud",
         max_workflow_time: int = 20100,  # almost 14 days
+        janis_memory_mb=None,
     ):
         """Spartan template
 
@@ -43,6 +57,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
         self.submission_queue = submission_queue
         self.max_workflow_time = max_workflow_time
+        self.janis_memory_mb = janis_memory_mb
 
         super().__init__(
             mail_program="sendmail -t",
@@ -88,6 +103,9 @@ class SpartanTemplate(SlurmSingularityTemplate):
             newcommand.extend(
                 ["--mail-user", config.notifications.email, "--mail-type", "END"]
             )
+
+        if self.janis_memory_mb:
+            newcommand.extend(["--mem", str(self.janis_memory_mb)])
 
         newcommand.extend(["--wrap", loadedcommand])
 

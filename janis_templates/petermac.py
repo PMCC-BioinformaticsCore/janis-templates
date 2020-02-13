@@ -4,6 +4,20 @@ from janis_assistant.templates.slurm import SlurmSingularityTemplate
 
 
 class PeterMacTemplate(SlurmSingularityTemplate):
+
+    ignore_init_keys = [
+        "execution_dir",
+        "build_instructions",
+        "container_dir",
+        "singularity_version",
+        "singularity_build_instructions",
+        "max_cores",
+        "max_ram",
+        "can_run_in_foreground",
+        "run_in_background",
+        "janis_memory",
+    ]
+
     def __init__(
         self,
         execution_dir: str = None,
@@ -16,6 +30,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         max_cores=40,
         max_ram=256,
         max_workflow_time: int = 20100,  # almost 14 days
+        janis_memory_mb=None,
     ):
         """Peter Mac (login node) template
 
@@ -45,6 +60,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
     --wrap 'unset SINGULARITY_TMPDIR && docker_subbed=$(sed -e 's/[^A-Za-z0-9._-]/_/g' <<< ${{docker}}) \
     && image={container_dir}/$docker_subbed.sif && singularity pull $image docker://${{docker}}'"
 
+        self.max_workflow_time = max_workflow_time
+        self.janis_memory_mb = janis_memory_mb
+
         super().__init__(
             mail_program="sendmail -t",
             execution_dir=execution_dir,
@@ -57,9 +75,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             limit_resources=False,
             max_cores=max_cores,
             max_ram=max_ram,
+            can_run_in_foreground=False,
+            run_in_background=True,
         )
-
-        self.max_workflow_time = max_workflow_time
 
     def submit_detatched_resume(
         self, wid: str, command: List[str], logsdir, config, **kwargs
@@ -93,6 +111,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             newcommand.extend(
                 ["--mail-user", config.notifications.email, "--mail-type", "END"]
             )
+
+        if self.janis_memory_mb:
+            newcommand.extend(["--mem", str(self.janis_memory_mb)])
 
         newcommand.extend(["--wrap", jc])
 

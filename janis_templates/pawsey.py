@@ -17,6 +17,19 @@ class PawseyTemplate(SlurmSingularityTemplate):
     It's proposed that Janis assistant could resubmit itself
     """
 
+    ignore_init_keys = [
+        "execution_dir",
+        "build_instructions",
+        "container_dir",
+        "singularity_version",
+        "singularity_build_instructions",
+        "max_cores",
+        "max_ram",
+        "can_run_in_foreground",
+        "run_in_background",
+        "janis_memory",
+    ]
+
     def __init__(
         self,
         container_dir: str,
@@ -30,6 +43,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
         max_ram=128,
         submission_queue: str = "longq",
         max_workflow_time: int = 5700,  # almost 4 days
+        janis_memory_mb=None,
     ):
         """
         :param execution_dir: A location where the execution should take place
@@ -50,6 +64,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
 
         self.submission_queue = submission_queue
         self.max_workflow_time = max_workflow_time
+        self.janis_memory_mb = janis_memory_mb
 
         super().__init__(
             execution_dir=execution_dir,
@@ -92,6 +107,9 @@ class PawseyTemplate(SlurmSingularityTemplate):
             newcommand.extend(
                 ["--mail-user", config.notifications.email, "--mail-type", "END"]
             )
+
+        if self.janis_memory_mb:
+            newcommand.extend(["--mem", str(self.janis_memory_mb)])
 
         newcommand.extend(["--wrap", jc])
 
