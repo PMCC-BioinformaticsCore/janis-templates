@@ -68,7 +68,6 @@ class SpartanTemplate(SlurmSingularityTemplate):
             catch_slurm_errors=catch_slurm_errors,
             build_instructions="singularity pull $image docker://${docker}",
             singularity_load_instructions=singload,
-            limit_resources=False,
             max_cores=max_cores,
             max_ram=max_ram,
         )
@@ -95,7 +94,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         ]
 
         if (
-            self.send_slurm_emails
+            self.send_job_emails
             and config
             and config.notifications
             and config.notifications.email

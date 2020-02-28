@@ -99,7 +99,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
         ]
 
         if (
-            self.send_slurm_emails
+            self.send_job_emails
             and config
             and config.notifications
             and config.notifications.email
