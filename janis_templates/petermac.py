@@ -78,6 +78,12 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             run_in_background=True,
         )
 
+    def post_configuration_hook(self, configuration):
+        super().post_configuration_hook(configuration)
+        if not configuration.cromwell.call_caching_method:
+            configuration.cromwell.call_caching_method = "fingerprint"
+        return configuration
+
     def submit_detatched_resume(
         self, wid: str, command: List[str], logsdir, config, **kwargs
     ):
