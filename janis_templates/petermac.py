@@ -87,7 +87,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             singularity_load_instructions=singload,
             max_cores=max_cores,
             max_ram=max_ram,
-            can_run_in_foreground=True,
+            can_run_in_foreground=False,
             run_in_background=True,
         )
 
