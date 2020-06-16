@@ -1,5 +1,6 @@
 from typing import Union, List
 
+from janis_assistant.data.models.workflow import WorkflowModel, TaskStatus
 from janis_assistant.templates.slurm import SlurmSingularityTemplate
 
 
@@ -18,6 +19,8 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         "janis_memory",
     ]
 
+    expected_email_format = {None, "molpath"}
+
     def __init__(
         self,
         execution_dir: str = None,
@@ -26,11 +29,12 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         singularity_version="3.4.0",
         send_job_emails=False,
         catch_slurm_errors=True,
-        singularity_build_instructions=None,
+        singularity_build_instructions: str = None,
         max_cores=40,
         max_ram=256,
         max_workflow_time: int = 20100,  # almost 14 days
-        janis_memory_mb=None,
+        janis_memory_mb: int = None,
+        email_format: str = None,
     ):
         """Peter Mac (login node) template
 
@@ -46,6 +50,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
         :param max_workflow_time: The walltime of the submitted workflow "brain"
+        :param email_format: (None, "molpath")
         """
 
         singload = "module load singularity"
@@ -62,6 +67,14 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         self.max_workflow_time = max_workflow_time
         self.janis_memory_mb = janis_memory_mb
+        if email_format not in PeterMacTemplate.expected_email_format:
+            valid_options_formatted = ", ".join(
+                f"'{o}'" for o in PeterMacTemplate.expected_email_format
+            )
+            raise Exception(
+                f"Argument email_format: invalid choice: '{email_format}' (choose from {valid_options_formatted})"
+            )
+        self.email_format = email_format
 
         super().__init__(
             mail_program="sendmail -t",
@@ -74,7 +87,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             singularity_load_instructions=singload,
             max_cores=max_cores,
             max_ram=max_ram,
-            can_run_in_foreground=False,
+            can_run_in_foreground=True,
             run_in_background=True,
         )
 
@@ -129,4 +142,65 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             config=config,
             logsdir=logsdir,
             **kwargs,
+        )
+
+    def prepare_status_update_email(self, **kwargs):
+        if self.email_format == "molpath":
+            return self.prepare_molpath_status_update_email(**kwargs)
+        else:
+            return super().prepare_status_update_email(**kwargs)
+
+    def prepare_molpath_status_update_email(
+        self, status: TaskStatus, metadata: WorkflowModel
+    ):
+        skip_stepids = {}
+
+        style_block_from_status = (
+            lambda status: f'style="color: {status.to_hexcolor()}"'
+            if status.to_hexcolor()
+            else ""
+        )
+
+        rows = "\n".join(
+            f"""<tr>
+                <td {style_block_from_status(job.status)}>{job.name}</td>
+                <td>{str(job.status)}</td>
+            </tr>"""
+            for job in metadata.jobs
+            if job.name not in skip_stepids
+        )
+
+        template = """\
+<h1>Status change: {status}</h1>
+
+<p>
+    The workflow '{wfname}' ({wid}) moved to the '{status}' status.
+</p>
+<ul>
+    <li>Task directory: <code>{tdir}</code></li>
+    <li>Execution directory: <code>{exdir}</code></li>
+</ul>
+
+<h3>Run status</h3>
+<table>
+    <thead>
+        <tr><th>#Sample</th><th>Janis</th></tr>
+    </thead>
+    <tbody>
+    {rows}
+    </tbody>
+</table>
+
+<h4>Progress</h4>
+{progress}
+        """
+
+        return template.format(
+            wid=metadata.wid,
+            wfname=metadata.name,
+            status=status,
+            exdir=metadata.execution_dir,
+            tdir=metadata.outdir,
+            rows=rows,
+            progress=metadata.format(monochrome=True, brief=True),
         )
