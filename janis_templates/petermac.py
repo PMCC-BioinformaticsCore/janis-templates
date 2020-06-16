@@ -157,7 +157,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         def table_style_gen(**kwargs):
             kwargs.update({"border": "1px solid black", "padding": "8px"})
-            elsjoined = " ".join("{k}: {v};" for k, v in kwargs.items())
+            elsjoined = " ".join(f"{k}: {v};" for k, v in kwargs.items())
             return f'style="{elsjoined}"'
 
         rows = "\n".join(
