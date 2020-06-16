@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Optional
 
 from janis_assistant.data.models.workflow import WorkflowModel, TaskStatus
 from janis_assistant.templates.slurm import SlurmSingularityTemplate
@@ -155,12 +155,15 @@ class PeterMacTemplate(SlurmSingularityTemplate):
     ):
         skip_stepids = {}
 
-        css_color_if_required = lambda color: f"color: {color};" if color else ""
+        def table_style_gen(**kwargs):
+            kwargs.update({"border": "1px solid black", "padding": "8px"})
+            elsjoined = " ".join("{k}: {v};" for k, v in kwargs.items())
+            return f'style="{elsjoined}"'
 
         rows = "\n".join(
             f"""<tr>
-                <td style="1px solid black; {css_color_if_required(job.status.to_hexcolor())}">{job.name}</td>
-                <td>{str(job.status)}</td>
+                <td {table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
+                <td {table_style_gen()}>{str(job.status)}</td>
             </tr>"""
             for job in metadata.jobs
             if job.name not in skip_stepids
@@ -191,8 +194,8 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 <table style="border-collapse: collapse; border: 1px solid black">
     <thead>
         <tr>
-            <th style="1px solid black;">#Sample</th>
-            <th style="1px solid black;">Janis</th>
+            <th {borderstyle}>#Sample</th>
+            <th {borderstyle}>Janis</th>
         </tr>
     </thead>
     <tbody>
@@ -212,6 +215,7 @@ Kind regards,
             status=status,
             exdir=metadata.execution_dir,
             tdir=metadata.outdir,
+            borderstyle=table_style_gen(),
             rows=rows,
             progress_and_header=progress_and_header,
         )
