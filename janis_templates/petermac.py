@@ -155,20 +155,26 @@ class PeterMacTemplate(SlurmSingularityTemplate):
     ):
         skip_stepids = {}
 
-        style_block_from_status = (
-            lambda status: f'style="color: {status.to_hexcolor()}"'
-            if status.to_hexcolor()
-            else ""
-        )
+        css_color_if_required = lambda color: f"color: {color};" if color else ""
 
         rows = "\n".join(
             f"""<tr>
-                <td {style_block_from_status(job.status)}>{job.name}</td>
+                <td style="1px solid black; {css_color_if_required(job.status.to_hexcolor())}">{job.name}</td>
                 <td>{str(job.status)}</td>
             </tr>"""
             for job in metadata.jobs
             if job.name not in skip_stepids
         )
+
+        progress_and_header = ""
+        if status.is_in_final_state():
+            progress_and_header = f"""\
+<hr />
+<h3>Progress</h3>        
+<pre>
+{metadata.format(monochrome=True, brief=True)}
+</pre>
+        """
 
         template = """\
 <h1>Status change: {status}</h1>
@@ -182,17 +188,22 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 </ul>
 
 <h3>Run status</h3>
-<table>
+<table style="border-collapse: collapse; border: 1px solid black">
     <thead>
-        <tr><th>#Sample</th><th>Janis</th></tr>
+        <tr>
+            <th style="1px solid black;">#Sample</th>
+            <th style="1px solid black;">Janis</th>
+        </tr>
     </thead>
     <tbody>
     {rows}
     </tbody>
 </table>
 
-<h4>Progress</h4>
-{progress}
+{progress_and_header}
+
+Kind regards,
+- Janis
         """
 
         return template.format(
@@ -202,5 +213,5 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             exdir=metadata.execution_dir,
             tdir=metadata.outdir,
             rows=rows,
-            progress=metadata.format(monochrome=True, brief=True),
+            progress_and_header=progress_and_header,
         )
