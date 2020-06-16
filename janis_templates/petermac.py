@@ -163,7 +163,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         rows = "\n".join(
             f"""<tr>
                 <td {table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
-                <td {table_style_gen()}>{str(job.status)}</td>
+                <td {table_style_gen(color=job.status.to_hexcolor())}>{str(job.status)}</td>
             </tr>"""
             for job in metadata.jobs
             if job.name not in skip_stepids
