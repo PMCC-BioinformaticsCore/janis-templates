@@ -170,14 +170,28 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         )
 
         progress_and_header = ""
+        run_status = ""
         if status.is_in_final_state():
+            borderstyle = table_style_gen()
+            run_status = f"""
+                <h2>Run status</h3>
+                <table style="border-collapse: collapse; border: 1px solid black">
+                    <thead>
+                        <tr>
+                            <th {borderstyle}>#Sample</th>
+                            <th {borderstyle}>Janis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {rows}
+                    </tbody>
+                </table>"""
+
             progress_and_header = f"""\
-<hr />
-<h3>Progress</h3>        
-<pre>
-{metadata.format(monochrome=True, brief=True)}
-</pre>
-        """
+                <h2>Progress</h3>        
+                <pre>
+                {metadata.format(monochrome=True, brief=True)}
+                </pre>"""
 
         template = """\
 <h1>Status change: {status}</h1>
@@ -190,21 +204,11 @@ class PeterMacTemplate(SlurmSingularityTemplate):
     <li>Execution directory: <code>{exdir}</code></li>
 </ul>
 
-<h3>Run status</h3>
-<table style="border-collapse: collapse; border: 1px solid black">
-    <thead>
-        <tr>
-            <th {borderstyle}>#Sample</th>
-            <th {borderstyle}>Janis</th>
-        </tr>
-    </thead>
-    <tbody>
-    {rows}
-    </tbody>
-</table>
+{run_status}
 
 {progress_and_header}
 
+<br /><br />
 Kind regards,
 - Janis
         """
@@ -215,7 +219,6 @@ Kind regards,
             status=status,
             exdir=metadata.execution_dir,
             tdir=metadata.outdir,
-            borderstyle=table_style_gen(),
-            rows=rows,
             progress_and_header=progress_and_header,
+            run_status=run_status,
         )
