@@ -150,31 +150,33 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         else:
             return super().prepare_status_update_email(**kwargs)
 
-    def prepare_molpath_status_update_email(
-        self, status: TaskStatus, metadata: WorkflowModel
-    ):
+    @staticmethod
+    def table_style_gen(**kwargs):
+        kwargs.update({"border": "1px solid black", "padding": "8px"})
+        elsjoined = " ".join(f"{k}: {v};" for k, v in kwargs.items())
+        return f'style="{elsjoined}"'
+
+    @staticmethod
+    def prepare_run_status_table(status: TaskStatus, metadata: WorkflowModel):
+        inputs = {i.tag: i.value for i in metadata.inputs}
+        components = []
+
         skip_stepids = {}
+        borderstyle = PeterMacTemplate.table_style_gen()
 
-        def table_style_gen(**kwargs):
-            kwargs.update({"border": "1px solid black", "padding": "8px"})
-            elsjoined = " ".join(f"{k}: {v};" for k, v in kwargs.items())
-            return f'style="{elsjoined}"'
-
-        rows = "\n".join(
-            f"""<tr>
-                <td {table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
-                <td {table_style_gen(color=job.status.to_hexcolor())}>{str(job.status)}</td>
-            </tr>"""
-            for job in metadata.jobs
-            if job.name not in skip_stepids
-        )
-
-        progress_and_header = ""
-        run_status = ""
         if status.is_in_final_state():
-            borderstyle = table_style_gen()
-            run_status = f"""
-                <h2>Run status</h3>
+
+            rows = "\n".join(
+                f"""<tr>
+                    <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
+                    <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}>{str(job.status)}</td>
+                </tr>"""
+                for job in metadata.jobs
+                if job.name not in skip_stepids
+            )
+
+            components.append(
+                f"""
                 <table style="border-collapse: collapse; border: 1px solid black">
                     <thead>
                         <tr>
@@ -186,6 +188,44 @@ class PeterMacTemplate(SlurmSingularityTemplate):
                     {rows}
                     </tbody>
                 </table>"""
+            )
+
+        if "seqrun" in inputs:
+            seqrun = inputs.get("seqrun")
+            iterseqrun = [seqrun] if not isinstance(seqrun, list) else seqrun
+            rows = "\n".join(
+                f"""<tr>
+                    <td {PeterMacTemplate.table_style_gen()}">{s}</td>
+                    <td {PeterMacTemplate.table_style_gen()}>{str(status)}</td>
+                </tr>"""
+                for s in iterseqrun
+            )
+            components.append(
+                f"""<table style="border-collapse: collapse; border: 1px solid black">
+                    <thead>
+                        <tr>
+                            <th {borderstyle}>#Run</th>
+                            <th {borderstyle}>Janis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {rows}
+                    </tbody>
+                </table>"""
+            )
+
+        if len(components) > 0:
+            components.insert(0, "<h3>Run status</h3>")
+
+        return "\n".join(components)
+
+    def prepare_molpath_status_update_email(
+        self, status: TaskStatus, metadata: WorkflowModel
+    ):
+
+        progress_and_header = ""
+        run_status = ""
+        if status.is_in_final_state():
 
             progress_and_header = f"""\
                 <h2>Progress</h3>        
