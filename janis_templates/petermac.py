@@ -7,7 +7,7 @@ from janis_assistant.templates.slurm import SlurmSingularityTemplate
 class PeterMacTemplate(SlurmSingularityTemplate):
 
     ignore_init_keys = [
-        "execution_dir",
+        "intermediate_execution_dir",
         "build_instructions",
         "container_dir",
         "singularity_version",
@@ -23,7 +23,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        execution_dir: str = None,
+        intermediate_execution_dir: str = None,
         container_dir="/config/binaries/singularity/containers_devel/janis/",
         queues: Union[str, List[str]] = "prod_med,prod",
         singularity_version="3.4.0",
@@ -40,7 +40,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         Template to run Janis / Cromwell at the Peter MacCallum Cancer Centre (Rosalind)
 
-        :param execution_dir: Execution directory
+        :param intermediate_execution_dir: Computation directory
         :param queues: The queue to submit jobs to
         :param container_dir: [OPTIONAL] Override the directory singularity containers are stored in
         :param singularity_version: The version of Singularity to use on the cluster
@@ -78,7 +78,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         super().__init__(
             mail_program="sendmail -t",
-            execution_dir=execution_dir,
+            intermediate_execution_dir=intermediate_execution_dir,
             container_dir=container_dir,
             queues=joined_queued,
             send_job_emails=send_job_emails,

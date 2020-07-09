@@ -7,7 +7,7 @@ class WEHITemplate(PbsSingularityTemplate):
     def __init__(
         self,
         container_dir: str,
-        execution_dir: str = None,
+        intermediate_execution_dir: str = None,
         queues: Union[List[str], str] = None,
         singularity_version="3.4.1",
         catch_pbs_errors=True,
@@ -18,7 +18,7 @@ class WEHITemplate(PbsSingularityTemplate):
     ):
         """
         :param container_dir: Location where to save and execute containers from
-        :param execution_dir: A location where the execution should take place
+        :param intermediate_execution_dir: A location where the execution should take place
         :param queues: A single or list of queues that woork should be submitted to
         :param singularity_version: Version of singularity to load
         :param catch_pbs_errors: Catch PBS errors (like OOM or walltime)
@@ -38,7 +38,7 @@ class WEHITemplate(PbsSingularityTemplate):
 
         super().__init__(
             mail_program="sendmail -t",
-            execution_dir=execution_dir,
+            intermediate_execution_dir=intermediate_execution_dir,
             queues=queues,
             send_job_emails=send_job_emails,
             build_instructions=build_instructions,

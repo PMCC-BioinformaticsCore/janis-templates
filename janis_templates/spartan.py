@@ -12,7 +12,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
     """
 
     ignore_init_keys = [
-        "execution_dir",
+        "intermediate_execution_dir",
         "build_instructions",
         "container_dir",
         "singularity_version",
@@ -27,7 +27,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
     def __init__(
         self,
         container_dir: str,
-        execution_dir: str = None,
+        intermediate_execution_dir: str = None,
         queues: Union[str, List[str]] = "cloud",
         singularity_version="3.2.0-spartan_gcc-6.2.0",
         send_job_emails=True,
@@ -42,7 +42,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
         Template for Melbourne University's Spartan Slurm cluster
 
-        :param execution_dir: execution directory for Cromwell
+        :param intermediate_execution_dir: computation directory for intermediate files (defaults to <exec>/execution OR <outputdir>/janis/execution)
         :param queues: The queue to submit jobs to
         :param container_dir:
         :param singularity_version:
@@ -61,7 +61,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
         super().__init__(
             mail_program="sendmail -t",
-            execution_dir=execution_dir,
+            intermediate_execution_dir=intermediate_execution_dir,
             container_dir=container_dir,
             queues=queues,
             send_job_emails=send_job_emails,
