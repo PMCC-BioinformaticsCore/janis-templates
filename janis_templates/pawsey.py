@@ -18,7 +18,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
     """
 
     ignore_init_keys = [
-        "execution_dir",
+        "intermediate_execution_dir",
         "build_instructions",
         "container_dir",
         "singularity_version",
@@ -33,7 +33,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
     def __init__(
         self,
         container_dir: str,
-        execution_dir: str = None,
+        intermediate_execution_dir: str = None,
         queues: Union[str, List[str]] = "workq",
         singularity_version: str = "3.3.0",
         catch_slurm_errors=True,
@@ -46,7 +46,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
         janis_memory_mb=None,
     ):
         """
-        :param execution_dir: A location where the execution should take place
+        :param intermediate_execution_dir: A location where the execution should take place
         :param container_dir: Location where to save and execute containers from
         :param queues: A single or list of queues that woork should be submitted to
         :param singularity_version: Version of singularity to load
@@ -67,7 +67,7 @@ class PawseyTemplate(SlurmSingularityTemplate):
         self.janis_memory_mb = janis_memory_mb
 
         super().__init__(
-            execution_dir=execution_dir,
+            intermediate_execution_dir=intermediate_execution_dir,
             queues=queues,
             container_dir=container_dir,
             catch_slurm_errors=catch_slurm_errors,

@@ -1,12 +1,13 @@
-from typing import Union, List
+from typing import Union, List, Optional
 
+from janis_assistant.data.models.workflow import WorkflowModel, TaskStatus
 from janis_assistant.templates.slurm import SlurmSingularityTemplate
 
 
 class PeterMacTemplate(SlurmSingularityTemplate):
 
     ignore_init_keys = [
-        "execution_dir",
+        "intermediate_execution_dir",
         "build_instructions",
         "container_dir",
         "singularity_version",
@@ -18,25 +19,28 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         "janis_memory",
     ]
 
+    expected_email_format = {None, "molpath"}
+
     def __init__(
         self,
-        execution_dir: str = None,
+        intermediate_execution_dir: str = None,
         container_dir="/config/binaries/singularity/containers_devel/janis/",
         queues: Union[str, List[str]] = "prod_med,prod",
         singularity_version="3.4.0",
         send_job_emails=False,
         catch_slurm_errors=True,
-        singularity_build_instructions=None,
+        singularity_build_instructions: str = None,
         max_cores=40,
         max_ram=256,
         max_workflow_time: int = 20100,  # almost 14 days
-        janis_memory_mb=None,
+        janis_memory_mb: int = None,
+        email_format: str = None,
     ):
         """Peter Mac (login node) template
 
         Template to run Janis / Cromwell at the Peter MacCallum Cancer Centre (Rosalind)
 
-        :param execution_dir: Execution directory
+        :param intermediate_execution_dir: Computation directory
         :param queues: The queue to submit jobs to
         :param container_dir: [OPTIONAL] Override the directory singularity containers are stored in
         :param singularity_version: The version of Singularity to use on the cluster
@@ -46,6 +50,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
         :param max_workflow_time: The walltime of the submitted workflow "brain"
+        :param email_format: (None, "molpath")
         """
 
         singload = "module load singularity"
@@ -62,10 +67,18 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         self.max_workflow_time = max_workflow_time
         self.janis_memory_mb = janis_memory_mb
+        if email_format not in PeterMacTemplate.expected_email_format:
+            valid_options_formatted = ", ".join(
+                f"'{o}'" for o in PeterMacTemplate.expected_email_format
+            )
+            raise Exception(
+                f"Argument email_format: invalid choice: '{email_format}' (choose from {valid_options_formatted})"
+            )
+        self.email_format = email_format
 
         super().__init__(
             mail_program="sendmail -t",
-            execution_dir=execution_dir,
+            intermediate_execution_dir=intermediate_execution_dir,
             container_dir=container_dir,
             queues=joined_queued,
             send_job_emails=send_job_emails,
@@ -129,4 +142,123 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             config=config,
             logsdir=logsdir,
             **kwargs,
+        )
+
+    def prepare_status_update_email(self, **kwargs):
+        if self.email_format == "molpath":
+            return self.prepare_molpath_status_update_email(**kwargs)
+        else:
+            return super().prepare_status_update_email(**kwargs)
+
+    @staticmethod
+    def table_style_gen(**kwargs):
+        kwargs.update({"border": "1px solid black", "padding": "8px"})
+        elsjoined = " ".join(f"{k}: {v};" for k, v in kwargs.items())
+        return f'style="{elsjoined}"'
+
+    @staticmethod
+    def prepare_run_status_table(status: TaskStatus, metadata: WorkflowModel):
+        inputs = {i.tag: i.value for i in metadata.inputs}
+        components = []
+
+        skip_stepids = {}
+        borderstyle = PeterMacTemplate.table_style_gen()
+
+        if status.is_in_final_state():
+
+            rows = "\n".join(
+                f"""<tr>
+                    <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
+                    <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}>{str(job.status)}</td>
+                </tr>"""
+                for job in metadata.jobs
+                if job.name not in skip_stepids
+            )
+
+            components.append(
+                f"""
+                <table style="border-collapse: collapse; border: 1px solid black">
+                    <thead>
+                        <tr>
+                            <th {borderstyle}>#Sample</th>
+                            <th {borderstyle}>Janis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {rows}
+                    </tbody>
+                </table>"""
+            )
+
+        if "seqrun" in inputs:
+            seqrun = inputs.get("seqrun")
+            iterseqrun = [seqrun] if not isinstance(seqrun, list) else seqrun
+            rows = "\n".join(
+                f"""<tr>
+                    <td {PeterMacTemplate.table_style_gen()}">{s}</td>
+                    <td {PeterMacTemplate.table_style_gen()}>{str(status)}</td>
+                </tr>"""
+                for s in iterseqrun
+            )
+            components.append(
+                f"""<table style="border-collapse: collapse; border: 1px solid black">
+                    <thead>
+                        <tr>
+                            <th {borderstyle}>#Run</th>
+                            <th {borderstyle}>Janis</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {rows}
+                    </tbody>
+                </table>"""
+            )
+
+        if len(components) > 0:
+            components.insert(0, "<h3>Run status</h3>")
+
+        return "\n".join(components)
+
+    def prepare_molpath_status_update_email(
+        self, status: TaskStatus, metadata: WorkflowModel
+    ):
+
+        progress_and_header = ""
+        run_status = ""
+        if status.is_in_final_state():
+
+            progress_and_header = f"""\
+                <h2>Progress</h3>        
+                <pre>
+                {metadata.format(monochrome=True, brief=True)}
+                </pre>"""
+
+        template = """\
+<h1>Status change: {status}</h1>
+
+<p>
+    The workflow '{wfname}' ({wid}) moved to the '{status}' status.
+</p>
+<ul>
+    <li>Task directory: <code>{tdir}</code></li>
+    <li>Execution directory: <code>{exdir}</code></li>
+</ul>
+
+{run_status}
+
+{progress_and_header}
+
+<br /><br />
+Kind regards,
+- Janis
+        """
+
+        return template.format(
+            wid=metadata.wid,
+            wfname=metadata.name,
+            status=status,
+            exdir=metadata.execution_dir,
+            tdir=metadata.outdir,
+            progress_and_header=progress_and_header,
+            run_status=run_status,
         )
