@@ -1,6 +1,7 @@
 from typing import Union, List, Optional
 
-from janis_assistant.data.models.workflow import WorkflowModel, TaskStatus
+from janis_assistant.data.enums.taskstatus import TaskStatus
+from janis_assistant.data.models.run import SubmissionModel, RunModel
 from janis_assistant.templates.slurm import SlurmSingularityTemplate
 
 
@@ -157,8 +158,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         return f'style="{elsjoined}"'
 
     @staticmethod
-    def prepare_run_status_table(status: TaskStatus, metadata: WorkflowModel):
-        inputs = {i.tag: i.value for i in metadata.inputs}
+    def prepare_run_status_table(status: TaskStatus, run: RunModel):
+
+        inputs = {i.tag: i.value for i in run.inputs}
         components = []
 
         skip_stepids = {}
@@ -171,7 +173,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
                     <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}">{job.name}</td>
                     <td {PeterMacTemplate.table_style_gen(color=job.status.to_hexcolor())}>{str(job.status)}</td>
                 </tr>"""
-                for job in metadata.jobs
+                for job in run.jobs
                 if job.name not in skip_stepids
             )
 
@@ -220,7 +222,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         return "\n".join(components)
 
     def prepare_molpath_status_update_email(
-        self, status: TaskStatus, metadata: WorkflowModel
+        self, status: TaskStatus, metadata: SubmissionModel
     ):
 
         progress_and_header = ""
@@ -254,11 +256,11 @@ Kind regards,
         """
 
         return template.format(
-            wid=metadata.wid,
-            wfname=metadata.name,
+            wid=metadata.id_,
+            wfname=", ".join(set(r.name for r in metadata.runs)),
             status=status,
             exdir=metadata.execution_dir,
-            tdir=metadata.outdir,
+            tdir=metadata.output_dir,
             progress_and_header=progress_and_header,
             run_status=run_status,
         )
