@@ -18,6 +18,8 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         "can_run_in_foreground",
         "run_in_background",
         "janis_memory",
+        "email_format",
+        "log_janis_job_id_to_stdout",
     ]
 
     expected_email_format = {None, "molpath"}
@@ -36,6 +38,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         max_workflow_time: int = 20100,  # almost 14 days
         janis_memory_mb: int = None,
         email_format: str = None,
+        log_janis_job_id_to_stdout: bool = False,
     ):
         """Peter Mac (login node) template
 
@@ -76,6 +79,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
                 f"Argument email_format: invalid choice: '{email_format}' (choose from {valid_options_formatted})"
             )
         self.email_format = email_format
+        self.log_janis_job_id_to_stdout = log_janis_job_id_to_stdout
 
         super().__init__(
             mail_program="sendmail -t",
@@ -142,6 +146,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             capture_output=True,
             config=config,
             logsdir=logsdir,
+            log_output_to_stdout=self.log_janis_job_id_to_stdout,
             **kwargs,
         )
 
