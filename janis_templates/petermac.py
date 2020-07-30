@@ -54,7 +54,8 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
         :param max_workflow_time: The walltime of the submitted workflow "brain"
-        :param email_format: (None, "molpath")
+        :param email_format: (null, "molpath")
+        :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \d" to stdout with this option set to true.
         """
 
         singload = "module load singularity"
