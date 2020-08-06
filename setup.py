@@ -30,7 +30,7 @@ setup(
             "pawsey=janis_templates.pawsey:PawseyTemplate",
         ],
     },
-    install_requires=[],
+    install_requires=["janis-pipelines.core >= 0.10.2"],
     zip_safe=False,
     long_description=long_description,
     long_description_content_type="text/markdown",
