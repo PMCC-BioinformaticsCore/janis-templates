@@ -29,7 +29,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         container_dir: str,
         execution_dir: str = None,
         queues: Union[str, List[str]] = "cloud",
-        singularity_version="3.2.0-spartan_gcc-6.2.0",
+        singularity_version="3.5.3",
         send_job_emails=True,
         catch_slurm_errors=True,
         max_cores=32,
@@ -51,7 +51,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
         """
-        singload = "module load Singularity"
+        singload = "module load singularity"
         if singularity_version:
             singload += "/" + str(singularity_version)
 
@@ -78,7 +78,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         q = self.submission_queue or self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
-        loadedcommand = "module load Java && module load web_proxy && " + jc
+        loadedcommand = "module load java && module load web_proxy && " + jc
         newcommand = [
             "sbatch",
             "-p",
