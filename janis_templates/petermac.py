@@ -39,6 +39,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         janis_memory_mb: int = None,
         email_format: str = None,
         log_janis_job_id_to_stdout: bool = False,
+        submission_sbatch="sbatch",
     ):
         """Peter Mac (login node) template
 
@@ -55,7 +56,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param max_ram: Override maximum ram (default 508 [GB])
         :param max_workflow_time: The walltime of the submitted workflow "brain"
         :param email_format: (null, "molpath")
-        :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \d" to stdout with this option set to true.
+        :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \\d" to stdout with this option set to true.
         """
 
         singload = "module load singularity"
@@ -81,6 +82,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             )
         self.email_format = email_format
         self.log_janis_job_id_to_stdout = log_janis_job_id_to_stdout
+        self.submission_sbatch = submission_sbatch
 
         super().__init__(
             mail_program="sendmail -t",
@@ -113,7 +115,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         jc = " ".join(command) if isinstance(command, list) else command
 
         newcommand = [
-            "sbatch",
+            self.submission_sbatch,
             "-p",
             jq,
             "-J",
