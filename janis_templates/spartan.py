@@ -28,13 +28,13 @@ class SpartanTemplate(SlurmSingularityTemplate):
         self,
         container_dir: str,
         intermediate_execution_dir: str = None,
-        queues: Union[str, List[str]] = "cloud",
+        queues: Union[str, List[str]] = "physical",
         singularity_version="3.5.3",
         send_job_emails=True,
         catch_slurm_errors=True,
         max_cores=32,
         max_ram=508,
-        submission_queue: str = "cloud",
+        submission_queue: str = "physical",
         max_workflow_time: int = 20100,  # almost 14 days
         janis_memory_mb=None,
     ):
