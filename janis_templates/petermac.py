@@ -39,7 +39,8 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         janis_memory_mb: int = None,
         email_format: str = None,
         log_janis_job_id_to_stdout: bool = False,
-        submission_sbatch="sbatch",
+        submission_sbatch: str = "sbatch",
+        submission_node: Optional[str] = None,
     ):
         """Peter Mac (login node) template
 
@@ -57,6 +58,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param max_workflow_time: The walltime of the submitted workflow "brain"
         :param email_format: (null, "molpath")
         :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \\d" to stdout with this option set to true.
+        :param submission_node: Request a specific node with '--nodelist <nodename>'
         """
 
         singload = "module load singularity"
@@ -83,6 +85,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         self.email_format = email_format
         self.log_janis_job_id_to_stdout = log_janis_job_id_to_stdout
         self.submission_sbatch = submission_sbatch
+        self.submission_node = submission_node
 
         super().__init__(
             mail_program="sendmail -t",
@@ -114,12 +117,17 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         jq = ", ".join(q) if isinstance(q, list) else q
         jc = " ".join(command) if isinstance(command, list) else command
 
+        submission_node_command = []
+        if self.submission_node:
+            submission_node_command = ["--nodelist", self.submission_node]
+
         newcommand = [
             self.submission_sbatch,
             "-p",
             jq,
             "-J",
             f"janis-{wid}",
+            *submission_node_command,
             "--time",
             str(self.max_workflow_time or 14400),
             "-o",
