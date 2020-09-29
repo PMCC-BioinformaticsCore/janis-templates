@@ -40,7 +40,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         email_format: str = None,
         log_janis_job_id_to_stdout: bool = False,
         submission_sbatch: str = "sbatch",
-        submission_node: Optional[str] = None,
+        submission_node: Optional[str] = "papr-expanded02,",
     ):
         """Peter Mac (login node) template
 
