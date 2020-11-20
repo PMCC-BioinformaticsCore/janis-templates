@@ -39,8 +39,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         janis_memory_mb: int = None,
         email_format: str = None,
         log_janis_job_id_to_stdout: bool = False,
-        submission_sbatch: str = "sbatch",
+        submission_sbatch: Union[str, List[str]] = "sbatch",
         submission_node: Optional[str] = "papr-expanded02,",
+        submission_cpus: int = None,
     ):
         """Peter Mac (login node) template
 
@@ -59,6 +60,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param email_format: (null, "molpath")
         :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \\d" to stdout with this option set to true.
         :param submission_node: Request a specific node with '--nodelist <nodename>'
+        :param submission_cpus: Number of CPUs to request for the janis job (with --cpus-per-task)
         """
 
         singload = "module load singularity"
@@ -86,6 +88,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         self.log_janis_job_id_to_stdout = log_janis_job_id_to_stdout
         self.submission_sbatch = submission_sbatch
         self.submission_node = submission_node
+        self.submission_cpus = submission_cpus
 
         super().__init__(
             mail_program="sendmail -t",
@@ -121,8 +124,12 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         if self.submission_node:
             submission_node_command = ["--nodelist", self.submission_node]
 
+        submission_sbatch = self.submission_sbatch
+        if isinstance(submission_sbatch, str):
+            submission_sbatch = [submission_sbatch]
+
         newcommand = [
-            self.submission_sbatch,
+            *submission_sbatch,
             "-p",
             jq,
             "-J",
@@ -148,6 +155,9 @@ class PeterMacTemplate(SlurmSingularityTemplate):
 
         if self.janis_memory_mb:
             newcommand.extend(["--mem", str(self.janis_memory_mb)])
+
+        if self.submission_cpus:
+            newcommand.extend(["--cpus-per-task", str(self.submission_cpus)])
 
         newcommand.extend(["--wrap", jc])
 
