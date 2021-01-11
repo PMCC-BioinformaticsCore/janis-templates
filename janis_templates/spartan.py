@@ -1,5 +1,5 @@
 import subprocess
-from typing import Union, List
+from typing import Union, List, Optional
 
 from janis_core import Logger
 
@@ -116,3 +116,9 @@ class SpartanTemplate(SlurmSingularityTemplate):
             logsdir=logsdir,
             **kwargs,
         )
+
+    def run_test_command_prefix(self) -> Optional[List]:
+        q = self.submission_queue or self.queues or "physical"
+        jq = ", ".join(q) if isinstance(q, list) else q
+
+        return ["sbatch", "-p", jq, "--wrap"]
