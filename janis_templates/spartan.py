@@ -116,16 +116,3 @@ class SpartanTemplate(SlurmSingularityTemplate):
             logsdir=logsdir,
             **kwargs,
         )
-
-    def prepare_run_test_command(self, test_command: List[str]) -> Optional[List]:
-        """
-        Command to wrap the test command `janisdk run-test ...` depending on
-        the environment where we run the test
-
-        :return: a list of string of commnds or None
-        :rtype: Optional[List]
-        """
-        q = self.submission_queue or self.queues or "physical"
-        jq = ", ".join(q) if isinstance(q, list) else q
-
-        return ["sbatch", "-p", jq, "--wrap"] + [" ".join(test_command)]
