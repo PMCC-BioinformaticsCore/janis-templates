@@ -117,7 +117,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
             **kwargs,
         )
 
-    def run_test_command_prefix(self) -> Optional[List]:
+    def prepare_run_test_command(self, test_command: List[str]) -> Optional[List]:
         """
         Command to wrap the test command `janisdk run-test ...` depending on
         the environment where we run the test
@@ -128,4 +128,4 @@ class SpartanTemplate(SlurmSingularityTemplate):
         q = self.submission_queue or self.queues or "physical"
         jq = ", ".join(q) if isinstance(q, list) else q
 
-        return ["sbatch", "-p", jq, "--wrap"]
+        return ["sbatch", "-p", jq, "--wrap"] + [" ".join(test_command)]
