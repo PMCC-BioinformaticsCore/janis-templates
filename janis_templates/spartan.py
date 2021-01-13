@@ -26,17 +26,26 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        container_dir: str,
-        intermediate_execution_dir: str = None,
+        # General slurm
+        sbatch: str = "sbatch",
         queues: Union[str, List[str]] = "physical",
-        singularity_version="3.5.3",
-        send_job_emails=True,
-        catch_slurm_errors=True,
         max_cores=32,
         max_ram=508,
-        submission_queue: str = "physical",
-        max_workflow_time: int = 20100,  # almost 14 days
-        janis_memory_mb=None,
+        send_job_emails=True,
+        catch_slurm_errors=True,
+        # for submission
+        submission_queue: str = None,
+        submission_cpus: int = None,
+        submission_memory: int = None,
+        submission_node: str = None,
+        max_workflow_time: int = 43000,
+        # singularity
+        container_dir: str = None,
+        singularity_build_instructions=None,
+        singularity_version="3.5.3",
+        # janis specific
+        mail_program="sendmail -t",
+        intermediate_execution_dir: str = None,
     ):
         """Spartan template
 
@@ -55,64 +64,25 @@ class SpartanTemplate(SlurmSingularityTemplate):
         if singularity_version:
             singload += "/" + str(singularity_version)
 
-        self.submission_queue = submission_queue
-        self.max_workflow_time = max_workflow_time
-        self.janis_memory_mb = janis_memory_mb
-
         super().__init__(
-            mail_program="sendmail -t",
-            intermediate_execution_dir=intermediate_execution_dir,
-            container_dir=container_dir,
+            # slurm
+            sbatch=sbatch,
             queues=queues,
-            send_job_emails=send_job_emails,
-            catch_slurm_errors=catch_slurm_errors,
-            build_instructions="singularity pull $image docker://${docker}",
-            singularity_load_instructions=singload,
             max_cores=max_cores,
             max_ram=max_ram,
-        )
-
-    def submit_detatched_resume(self, wid, command, config, logsdir, **kwargs):
-        import os.path
-
-        q = self.submission_queue or self.queues or "physical"
-        jq = ", ".join(q) if isinstance(q, list) else q
-        jc = " ".join(command) if isinstance(command, list) else command
-        loadedcommand = "module load java && module load web_proxy && " + jc
-        newcommand = [
-            "sbatch",
-            "-p",
-            jq,
-            "-J",
-            f"janis-{wid}",
-            "-o",
-            os.path.join(logsdir, "slurm.stdout"),
-            "-e",
-            os.path.join(logsdir, "slurm.stderr"),
-            "--time",
-            str(self.max_workflow_time or 20100),
-        ]
-
-        if (
-            self.send_job_emails
-            and config
-            and config.notifications
-            and config.notifications.email
-        ):
-            newcommand.extend(
-                ["--mail-user", config.notifications.email, "--mail-type", "END"]
-            )
-
-        if self.janis_memory_mb:
-            newcommand.extend(["--mem", str(self.janis_memory_mb)])
-
-        newcommand.extend(["--wrap", loadedcommand])
-
-        super().submit_detatched_resume(
-            wid=wid,
-            command=newcommand,
-            capture_output=True,
-            config=config,
-            logsdir=logsdir,
-            **kwargs,
+            send_job_emails=send_job_emails,
+            catch_slurm_errors=catch_slurm_errors,
+            # submission
+            submission_queue=submission_queue,
+            submission_cpus=submission_cpus,
+            submission_memory=submission_memory,
+            submission_node=submission_node,
+            max_workflow_time=max_workflow_time,
+            # singularity
+            container_dir=container_dir,
+            build_instructions=singularity_build_instructions,
+            singularity_load_instructions=singload,
+            # janis-specific
+            intermediate_execution_dir=intermediate_execution_dir,
+            mail_program=mail_program,
         )
