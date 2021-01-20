@@ -32,18 +32,25 @@ class PawseyTemplate(SlurmSingularityTemplate):
 
     def __init__(
         self,
-        container_dir: str,
-        intermediate_execution_dir: str = None,
+        sbatch: str = "sbatch",
         queues: Union[str, List[str]] = "workq",
-        singularity_version: str = "3.3.0",
-        catch_slurm_errors=True,
         send_job_emails=True,
-        singularity_build_instructions="singularity pull $image docker://${docker}",
+        catch_slurm_errors=True,
         max_cores=28,
         max_ram=128,
-        submission_queue: str = "longq",
-        max_workflow_time: int = 5700,  # almost 4 days
-        janis_memory_mb=None,
+        # for submission
+        submission_queue: str = None,
+        submission_cpus: int = None,
+        submission_memory: int = None,
+        submission_node: str = None,
+        max_workflow_time: int = 43000,
+        # singularity
+        container_dir: str = None,
+        singularity_build_instructions=None,
+        singularity_version: str = "3.3.0",
+        # janis specific
+        mail_program="sendmail -t",
+        intermediate_execution_dir: str = None,
     ):
         """
         :param intermediate_execution_dir: A location where the execution should take place
@@ -62,62 +69,25 @@ class PawseyTemplate(SlurmSingularityTemplate):
         if singularity_version:
             singload += "/" + str(singularity_version)
 
-        self.submission_queue = submission_queue
-        self.max_workflow_time = max_workflow_time
-        self.janis_memory_mb = janis_memory_mb
-
         super().__init__(
-            intermediate_execution_dir=intermediate_execution_dir,
+            # slurm
+            sbatch=sbatch,
             queues=queues,
-            container_dir=container_dir,
-            catch_slurm_errors=catch_slurm_errors,
-            send_job_emails=send_job_emails,
-            build_instructions=singularity_build_instructions,
-            singularity_load_instructions=singload,
             max_cores=max_cores,
             max_ram=max_ram,
-        )
-
-    def submit_detatched_resume(self, wid: str, command, logsdir, config, **kwargs):
-        import os.path
-
-        q = self.queues
-        jq = ", ".join(q) if isinstance(q, list) else q
-        jc = " ".join(command) if isinstance(command, list) else command
-        newcommand = [
-            "sbatch",
-            "-p",
-            self.submission_queue or jq,
-            "-J",
-            f"janis-{wid}",
-            "--time",
-            str(self.max_workflow_time or 5700),
-            "-o",
-            os.path.join(logsdir, "slurm.stdout"),
-            "-e",
-            os.path.join(logsdir, "slurm.stderr"),
-        ]
-
-        if (
-            self.send_job_emails
-            and config
-            and config.notifications
-            and config.notifications.email
-        ):
-            newcommand.extend(
-                ["--mail-user", config.notifications.email, "--mail-type", "END"]
-            )
-
-        if self.janis_memory_mb:
-            newcommand.extend(["--mem", str(self.janis_memory_mb)])
-
-        newcommand.extend(["--wrap", jc])
-
-        super().submit_detatched_resume(
-            wid=wid,
-            command=newcommand,
-            capture_output=True,
-            config=config,
-            logsdir=logsdir,
-            **kwargs,
+            send_job_emails=send_job_emails,
+            catch_slurm_errors=catch_slurm_errors,
+            # submission
+            submission_queue=submission_queue,
+            submission_cpus=submission_cpus,
+            submission_memory=submission_memory,
+            submission_node=submission_node,
+            max_workflow_time=max_workflow_time,
+            # singularity
+            container_dir=container_dir,
+            build_instructions=singularity_build_instructions,
+            singularity_load_instructions=singload,
+            # janis-specific
+            intermediate_execution_dir=intermediate_execution_dir,
+            mail_program=mail_program,
         )
