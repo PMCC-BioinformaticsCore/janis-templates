@@ -35,6 +35,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         singularity_build_instructions: str = None,
         max_cores=40,
         max_ram=256,
+        max_duration=None,
         max_workflow_time: int = 20100,  # almost 14 days
         janis_memory_mb: int = None,
         email_format: str = None,
@@ -57,7 +58,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
         :param singularity_build_instructions: Sensible default for PeterMac template
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
-        :param max_workflow_time: The walltime of the submitted workflow "brain"
+        :param max_workflow_time: The walltime in minutes of the submitted workflow "brain"
         :param email_format: (null, "molpath")
         :param log_janis_job_id_to_stdout: This is already logged to STDERR, but you can also log the "Submitted batch job \\d" to stdout with this option set to true.
         :param submission_node: Request a specific node with '--nodelist <nodename>'
@@ -91,7 +92,7 @@ class PeterMacTemplate(SlurmSingularityTemplate):
             queues=joined_queued,
             max_cores=max_cores,
             max_ram=max_ram,
-            max_duration=20100,
+            max_duration=max_duration,
             send_job_emails=send_job_emails,
             catch_slurm_errors=catch_slurm_errors,
             # for submission
