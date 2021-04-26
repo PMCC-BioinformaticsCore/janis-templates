@@ -100,13 +100,3 @@ class SpartanTemplate(SlurmSingularityTemplate):
         :return: str: bash script to run
         """
         return "module load python/3.8.2; module load singularity/3.5.3; module load java/11.0.2; module load web_proxy"
-
-    def setup_container_command(self):
-        if self.singularity_load_instructions is not None:
-            load_singularity_command = self.singularity_load_instructions
-            if self.singularity_version:
-                load_singularity_command += f"{load_singularity_command}/{self.singularity_version}"
-
-            return load_singularity_command
-
-        return None
