@@ -59,9 +59,11 @@ class SpartanTemplate(SlurmSingularityTemplate):
         :param max_cores: Override maximum number of cores (default: 32)
         :param max_ram: Override maximum ram (default 508 [GB])
         """
+        self.singularity_version = singularity_version
+
         singload = "module load singularity"
-        if singularity_version:
-            singload += "/" + str(singularity_version)
+        if self.singularity_version:
+            singload += "/" + str(self.singularity_version)
 
         super().__init__(
             # slurm
