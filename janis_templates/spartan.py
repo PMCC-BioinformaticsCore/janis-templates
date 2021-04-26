@@ -1,5 +1,5 @@
 import subprocess
-from typing import Union, List
+from typing import Union, List, Optional
 
 from janis_core import Logger
 
@@ -20,7 +20,6 @@ class SpartanTemplate(SlurmSingularityTemplate):
         "max_cores",
         "max_ram",
         "can_run_in_foreground",
-        "run_in_background",
         "janis_memory",
     ]
 
@@ -42,7 +41,7 @@ class SpartanTemplate(SlurmSingularityTemplate):
         # singularity
         container_dir: str = None,
         singularity_build_instructions=None,
-        singularity_version="3.5.3",
+        singularity_version="3.7.3",
         # janis specific
         mail_program="sendmail -t",
         intermediate_execution_dir: str = None,
@@ -85,4 +84,23 @@ class SpartanTemplate(SlurmSingularityTemplate):
             # janis-specific
             intermediate_execution_dir=intermediate_execution_dir,
             mail_program=mail_program,
+            run_in_background=True
         )
+
+    def prejanis_hook(self) -> Optional[str]:
+        """
+        Before Janis starts to run a workflow, this block of code gets executed.
+        If a string is returned, it is executed in the current environment. This
+        block is also executed on a resume.
+
+        This might be a good place to load relevant dependencies
+
+        :return: str: bash script to run
+        """
+        return f"""#!/bin/bash
+        
+module load python/3.8.2
+module load singularity/3.5.3 
+module load java/11.0.2 
+module load web_proxy
+"""
