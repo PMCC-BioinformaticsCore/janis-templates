@@ -99,4 +99,4 @@ class SpartanTemplate(SlurmSingularityTemplate):
 
         :return: str: bash script to run
         """
-        return "module load python/3.8.2 singularity/3.5.3 java/11.0.2 web_proxy"
+        return f"module load python/3.8.2 singularity/{self.singularity_version} java/11.0.2 web_proxy"
