@@ -235,3 +235,10 @@ Kind regards,
             progress_and_header=progress_and_header,
             run_status=run_status,
         )
+
+    def nextflow(self, job):
+
+        config = super().nextflow()
+        config.queue = 'janis'
+
+        return config
