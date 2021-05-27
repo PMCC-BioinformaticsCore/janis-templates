@@ -239,6 +239,6 @@ Kind regards,
     def nextflow(self, job):
 
         config = super().nextflow(job)
-        config.queue = self.submission_queue
+        config.queue = self.queues
 
         return config
