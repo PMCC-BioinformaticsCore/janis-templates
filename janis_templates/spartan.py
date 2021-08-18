@@ -1,7 +1,4 @@
-import subprocess
 from typing import Union, List, Optional
-
-from janis_core import Logger
 
 from janis_assistant.templates.slurm import SlurmSingularityTemplate
 
