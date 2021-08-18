@@ -1,6 +1,6 @@
 # Janis Templates (assistant)
 
-[Janis-assistant](/PMCC-BioinformaticsCore/janis-assistant) is a component of Janis used to run workflows across various execution environments. This repository contains a number of preconfigured "templates" that you can use to run your workflow.
+[Janis-assistant](https://github.com/PMCC-BioinformaticsCore/janis-assistant) is a component of Janis used to run workflows across various execution environments. This repository contains a number of preconfigured "templates" that you can use to run your workflow.
 
 A (non-exhaustive) list of examples:
 
