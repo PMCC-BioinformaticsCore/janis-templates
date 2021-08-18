@@ -1,3 +1,5 @@
 .DS_Store
 .vscode
 .idea/
+janis_pipelines.templates.egg-info/
+pip-wheel-metadata/
